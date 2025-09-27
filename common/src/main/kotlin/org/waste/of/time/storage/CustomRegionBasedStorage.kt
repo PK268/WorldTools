@@ -16,6 +16,7 @@ import net.minecraft.world.storage.StorageKey
 import org.waste.of.time.WorldTools.MCA_EXTENSION
 import org.waste.of.time.WorldTools.MOD_NAME
 import org.waste.of.time.WorldTools.mc
+import net.minecraft.storage.NbtReadView
 import java.io.DataOutput
 import java.io.IOException
 import java.nio.file.Path
@@ -82,7 +83,7 @@ open class CustomRegionBasedStorage internal constructor(
                         .getOptionalValue(blockStateIdentifier)
                         .orElse(null)
                         ?.instantiate(blockPos, block.defaultState)?.apply {
-                            read(compoundTag, world.registryManager)
+                            read(NbtReadView.create(null,null,compoundTag))
                         }
                 }.getOrNull()
             } ?: emptyList()

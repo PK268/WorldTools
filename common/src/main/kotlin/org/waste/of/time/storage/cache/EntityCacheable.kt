@@ -7,14 +7,18 @@ import org.waste.of.time.Utils.toByte
 import org.waste.of.time.WorldTools.TIMESTAMP_KEY
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.storage.Cacheable
+import net.minecraft.util.ErrorReporter
+import net.minecraft.storage.NbtWriteView
 
 data class EntityCacheable(
     val entity: Entity
 ) : Cacheable {
-    fun compound() = NbtCompound().apply {
+
+    
+    fun compound() = NbtWriteView.create(ErrorReporter.EMPTY).apply {
         // saveSelfNbt has a check for RemovalReason.DISCARDED
         EntityType.getId(entity.type)?.let { putString(Entity.ID_KEY, it.toString()) }
-        entity.writeNbt(this)
+        entity.writeData(this)
 
         if (config.entity.behavior.modifyEntityBehavior) {
             putByte("NoAI", config.entity.behavior.noAI.toByte())
@@ -26,7 +30,7 @@ data class EntityCacheable(
         if (config.entity.metadata.captureTimestamp) {
             putLong(TIMESTAMP_KEY, System.currentTimeMillis())
         }
-    }
+    }.nbt
 
     override fun cache() {
         HotCache.entities.computeIfAbsent(entity.chunkPos) { mutableSetOf() }.apply {
