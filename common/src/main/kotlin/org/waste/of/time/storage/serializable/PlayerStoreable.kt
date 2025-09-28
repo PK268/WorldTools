@@ -19,6 +19,8 @@ import org.waste.of.time.storage.cache.HotCache
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import net.minecraft.util.ErrorReporter
+import net.minecraft.storage.NbtWriteView
 
 data class PlayerStoreable(
     val player: PlayerEntity
@@ -56,16 +58,23 @@ data class PlayerStoreable(
     }
 
     private fun savePlayerData(player: PlayerEntity, session: Session) {
+
         try {
             val playerDataDir = session.getDirectory(WorldSavePath.PLAYERDATA).toFile()
             playerDataDir.mkdirs()
 
             val newPlayerFile = File.createTempFile(player.uuidAsString + "-", ".dat", playerDataDir).toPath()
-            NbtIo.writeCompressed(player.writeNbt(NbtCompound()).apply {
-                if (config.entity.censor.lastDeathLocation) {
+            
+
+        val view = NbtWriteView.create(ErrorReporter.EMPTY).apply {
+	        player.writeData(this)
+            if (config.entity.censor.lastDeathLocation) {
                     remove("LastDeathLocation")
                 }
-            }, newPlayerFile)
+	    }
+
+            //writeCompresesed wants a compound tag and a path
+            NbtIo.writeCompressed(view.nbt, newPlayerFile)
             val currentFile = File(playerDataDir, player.uuidAsString + ".dat").toPath()
             val backupFile = File(playerDataDir, player.uuidAsString + ".dat_old").toPath()
             Util.backupAndReplace(currentFile, newPlayerFile, backupFile)

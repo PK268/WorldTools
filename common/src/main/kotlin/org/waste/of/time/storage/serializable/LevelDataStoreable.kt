@@ -19,8 +19,11 @@ import org.waste.of.time.manager.MessageManager
 import org.waste.of.time.manager.MessageManager.translateHighlight
 import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.Storeable
+import net.minecraft.storage.NbtWriteView
+import net.minecraft.nbt.NbtOps
 import java.io.File
 import java.io.IOException
+import net.minecraft.util.ErrorReporter
 
 class LevelDataStoreable : Storeable() {
     override fun shouldStore() = config.general.capture.levelData
@@ -83,10 +86,10 @@ class LevelDataStoreable : Storeable() {
         // skip removed features
 
         put("Version", NbtCompound().apply {
-            putString("Name", SharedConstants.getGameVersion().name)
-            putInt("Id", SharedConstants.getGameVersion().saveVersion.id)
-            putBoolean("Snapshot", !SharedConstants.getGameVersion().isStable)
-            putString("Series", SharedConstants.getGameVersion().saveVersion.series)
+            putString("Name", SharedConstants.getGameVersion().name())
+            putInt("Id", SharedConstants.getGameVersion().dataVersion().id)
+            putBoolean("Snapshot", !SharedConstants.getGameVersion().stable())
+            putString("Series", SharedConstants.getGameVersion().dataVersion().series)
         })
 
         NbtHelper.putDataVersion(this)
@@ -95,8 +98,8 @@ class LevelDataStoreable : Storeable() {
         mc.networkHandler?.listedPlayerListEntries?.find {
             it.profile.id == player.uuid
         }?.let {
-            putInt("GameType", it.gameMode.id)
-        } ?: putInt("GameType", player.server?.defaultGameMode?.id ?: 0)
+            putInt("GameType", it.gameMode.index)
+        } ?: putInt("GameType", player.server?.defaultGameMode?.index ?: 0)
 
         putInt("SpawnX", player.world.levelProperties.spawnPos.x)
         putInt("SpawnY", player.world.levelProperties.spawnPos.y)
@@ -124,11 +127,13 @@ class LevelDataStoreable : Storeable() {
         // ToDo: Seems that the client side game rules were removed. Now only works for single player :/
         val rules = player.world?.server?.gameRules?.genGameRules() ?: NbtCompound()
         put("GameRules", rules)
-        put("Player", NbtCompound().apply {
-            player.writeNbt(this)
-            remove("LastDeathLocation") // can contain sensitive information
+
+	    val view = NbtWriteView.create(ErrorReporter.EMPTY).apply {
+	        player.writeData(this)
+	        remove("LastDeathLocation")
             putString("Dimension", "minecraft:${player.world.registryKey.value.path}")
-        })
+	    }
+        put("Player", view.nbt)
 
         put("DragonFight", NbtCompound()) // not sure
         put("CustomBossEvents", NbtCompound()) // not sure
