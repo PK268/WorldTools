@@ -31,15 +31,15 @@ data class PlayerStoreable(
         get() = translateHighlight(
             "worldtools.capture.saved.player",
             player.name,
-            player.pos.asString(),
-            player.world.registryKey.value.path
+            player.getEntityPos().asString(),
+            player.getEntityWorld().registryKey.value.path
         )
 
     override val anonymizedInfo: MutableText
         get() = translateHighlight(
             "worldtools.capture.saved.player.anonymized",
             player.name,
-            player.world.registryKey.value.path
+            player.getEntityWorld().registryKey.value.path
         )
 
     override fun cache() {
@@ -54,7 +54,7 @@ data class PlayerStoreable(
         savePlayerData(player, session)
         session.createSaveHandler()
         StatisticManager.players++
-        StatisticManager.dimensions.add(player.world.registryKey.value.path)
+        StatisticManager.dimensions.add(player.getEntityWorld().registryKey.value.path)
     }
 
     private fun savePlayerData(player: PlayerEntity, session: Session) {

@@ -8,7 +8,7 @@ import net.minecraft.util.WorldSavePath
 import net.minecraft.world.GameRules
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.Utils.toByte
-import org.waste.of.time.WorldTools.DAT_EXTENSION
+import org.waste.of.time.WorldTools.AT_EXTENSIOND
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
