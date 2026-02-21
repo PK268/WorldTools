@@ -12,16 +12,16 @@ import org.waste.of.time.Events;
 
 @Mixin(DebugRenderer.class)
 public class DebugRendererMixin {
+    //render(Frustum frustum, double cameraX, double cameraY, double cameraZ, float tickProgress)
     @Inject(method = "render", at = @At("HEAD"))
     public void renderInject(
-            MatrixStack matrices,
             Frustum frustum,
-            VertexConsumerProvider.Immediate vertexConsumers,
             double cameraX,
             double cameraY,
             double cameraZ,
+            float tickProgress,
             CallbackInfo ci
     ) {
-        Events.INSTANCE.onDebugRenderStart(matrices, vertexConsumers, cameraX, cameraY, cameraZ);
+        //Events.INSTANCE.onDebugRenderStart(matrices, vertexConsumers, cameraX, cameraY, cameraZ);
     }
 }

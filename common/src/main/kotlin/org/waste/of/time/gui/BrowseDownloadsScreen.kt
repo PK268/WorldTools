@@ -24,13 +24,10 @@ object BrowseDownloadsScreen : Screen(Text.translatable("worldtools.gui.browser.
     }
 
     class WorldDownloadEntry : AlwaysSelectedEntryListWidget.Entry<WorldDownloadEntry>() {
+        //old: render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickProgress)
+        //new: render(DrawContext context, int mouseX, int mouseY, boolean hovered, float deltaTicks)
         override fun render(
             context: DrawContext?,
-            index: Int,
-            y: Int,
-            x: Int,
-            entryWidth: Int,
-            entryHeight: Int,
             mouseX: Int,
             mouseY: Int,
             hovered: Boolean,

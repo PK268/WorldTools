@@ -13,6 +13,7 @@ class WorldToolsModMenuIntegration : ModMenuApi {
 
     override fun getModConfigScreenFactory() =
         ConfigScreenFactory { parent: Screen? ->
+            //AutoConfig.getConfigHolder(WorldToolsConfig::class.java).get()
             AutoConfig.getConfigScreen(WorldToolsConfig::class.java, parent).get()
         }
 }

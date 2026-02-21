@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.lwjgl.glfw.GLFW
 import org.waste.of.time.config.WorldToolsConfig
+import net.minecraft.util.Identifier
 
 object WorldTools {
     const val MOD_NAME = "WorldTools"
@@ -27,13 +28,17 @@ object WorldTools {
     val CREDIT_MESSAGE = "This file was created by $MOD_NAME $VERSION ($URL)"
     val CREDIT_MESSAGE_MD = "This file was created by [$MOD_NAME $VERSION]($URL)"
     val LOG: Logger = LogManager.getLogger()
+    //old: 	(String translationKey, InputConstants$Type type, int code, String category)
+    //new:  (String id, int code, KeyMapping$Category category)
+    //InputUtil.Type.KEYSYM
     var CAPTURE_KEY = KeyBinding(
-        "$MOD_ID.key.toggle_capture", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F12,
-        "$MOD_ID.key.categories"
+        "$MOD_ID.key.toggle_capture", GLFW.GLFW_KEY_F12,
+        KeyBinding.Category.create(Identifier.of("$MOD_ID.key.toggle_capture", "$MOD_ID.key.categories"))
     )
     var CONFIG_KEY = KeyBinding(
-        "$MOD_ID.key.open_config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F10,
-        "$MOD_ID.key.categories"
+        "$MOD_ID.key.open_config", GLFW.GLFW_KEY_F10,
+        KeyBinding.Category.create(Identifier.of("$MOD_ID.key.open_config", "$MOD_ID.key.categories"))
+        
     )
 
     val mc: MinecraftClient = MinecraftClient.getInstance()

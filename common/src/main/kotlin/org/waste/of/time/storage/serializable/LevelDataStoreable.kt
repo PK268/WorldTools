@@ -5,10 +5,10 @@ import net.minecraft.nbt.*
 import net.minecraft.text.MutableText
 import net.minecraft.util.Util
 import net.minecraft.util.WorldSavePath
-import net.minecraft.world.GameRules
+import net.minecraft.world.rule.GameRules
 import net.minecraft.world.level.storage.LevelStorage.Session
 import org.waste.of.time.Utils.toByte
-import org.waste.of.time.WorldTools.AT_EXTENSIOND
+import org.waste.of.time.WorldTools.DAT_EXTENSION
 import org.waste.of.time.WorldTools.LOG
 import org.waste.of.time.WorldTools.config
 import org.waste.of.time.WorldTools.mc
@@ -85,12 +85,14 @@ class LevelDataStoreable : Storeable() {
 
         // skip removed features
 
-        put("Version", NbtCompound().apply {
+        /*         put("version", NbtCompound().apply {
             putString("Name", SharedConstants.getGameVersion().name())
             putInt("Id", SharedConstants.getGameVersion().dataVersion().id)
             putBoolean("Snapshot", !SharedConstants.getGameVersion().stable())
             putString("Series", SharedConstants.getGameVersion().dataVersion().series)
         })
+            */
+
 
         NbtHelper.putDataVersion(this)
 
@@ -99,39 +101,45 @@ class LevelDataStoreable : Storeable() {
             it.profile.id == player.uuid
         }?.let {
             putInt("GameType", it.gameMode.index)
-        } ?: putInt("GameType", player.server?.defaultGameMode?.index ?: 0)
+        } ?: putInt("GameType", player.getEntityWorld().server?.defaultGameMode?.index ?: 0)
 
-        putInt("SpawnX", player.world.levelProperties.spawnPos.x)
-        putInt("SpawnY", player.world.levelProperties.spawnPos.y)
-        putInt("SpawnZ", player.world.levelProperties.spawnPos.z)
-        putFloat("SpawnAngle", player.world.levelProperties.spawnAngle)
-        putLong("Time", player.world.time)
-        putLong("DayTime", player.world.timeOfDay)
+        put("spawn", NbtCompound().apply{
+            put("pos", NbtCompound().apply{
+                putInt("0",player.getEntityWorld().levelProperties.getSpawnPoint().getPos().x)
+                putInt("1",player.getEntityWorld().levelProperties.getSpawnPoint().getPos().x)
+                putInt("2",player.getEntityWorld().levelProperties.getSpawnPoint().getPos().x)
+            })
+            putFloat("pitch",player.getEntityWorld().levelProperties.getSpawnPoint().pitch())
+            putFloat("yaw",player.getEntityWorld().levelProperties.getSpawnPoint().yaw())
+        })
+        putLong("Time", player.getEntityWorld().time)
+        putLong("DayTime", player.getEntityWorld().timeOfDay)
         putLong("LastPlayed", System.currentTimeMillis())
         putString("LevelName", currentLevelName)
         putInt("version", 19133)
         putInt("clearWeatherTime", 0) // not sure
         putInt("rainTime", 0) // not sure
-        putBoolean("raining", player.world.isRaining)
-        putBoolean("thundering", player.world.isThundering)
-        putBoolean("hardcore", player.server?.isHardcore ?: false)
+        putBoolean("raining", player.getEntityWorld().isRaining)
+        putBoolean("thundering", player.getEntityWorld().isThundering)
+        putBoolean("hardcore", player.getEntityWorld().server?.isHardcore ?: false)
         putInt("thunderTime", 0) // not sure
         putBoolean("allowCommands", true) // not sure
         putBoolean("initialized", true) // not sure
 
-        player.world.worldBorder.write().writeNbt(this)
+        //i think this was removed 2/21/2026 - PK268
+        //player.getEntityWorld().worldBorder.write().writeNbt(this)
 
-        putByte("Difficulty", player.world.levelProperties.difficulty.id.toByte())
+        putByte("Difficulty", player.getEntityWorld().levelProperties.difficulty.id.toByte())
         putBoolean("DifficultyLocked", false) // not sure
 
         // ToDo: Seems that the client side game rules were removed. Now only works for single player :/
-        val rules = player.world?.server?.gameRules?.genGameRules() ?: NbtCompound()
-        put("GameRules", rules)
+        val rules = player.getEntityWorld()?.server?.getSaveProperties()?.gameRules?.genGameRules() ?: NbtCompound()
+        put("game_rules", rules)
 
 	    val view = NbtWriteView.create(ErrorReporter.EMPTY).apply {
 	        player.writeData(this)
 	        remove("LastDeathLocation")
-            putString("Dimension", "minecraft:${player.world.registryKey.value.path}")
+            putString("Dimension", "minecraft:${player.getEntityWorld().registryKey.value.path}")
 	    }
         put("Player", view.nbt)
 
@@ -144,20 +152,20 @@ class LevelDataStoreable : Storeable() {
         // skip wandering trader id
     }
 
-    private fun GameRules.genGameRules() = toNbt().apply {
+    private fun GameRules.genGameRules() = NbtCompound().apply {
         val setting = config.world.gameRules
         if (!setting.modifyGameRules) return@apply
 
-        putString(GameRules.DO_WARDEN_SPAWNING.name, setting.doWardenSpawning.toString())
-        putString(GameRules.DO_FIRE_TICK.name, setting.doFireTick.toString())
-        putString(GameRules.DO_VINES_SPREAD.name, setting.doVinesSpread.toString())
-        putString(GameRules.DO_MOB_SPAWNING.name, setting.doMobSpawning.toString())
-        putString(GameRules.DO_DAYLIGHT_CYCLE.name, setting.doDaylightCycle.toString())
-        putString(GameRules.KEEP_INVENTORY.name, setting.keepInventory.toString())
-        putString(GameRules.DO_MOB_GRIEFING.name, setting.doMobGriefing.toString())
-        putString(GameRules.DO_TRADER_SPAWNING.name, setting.doTraderSpawning.toString())
-        putString(GameRules.DO_PATROL_SPAWNING.name, setting.doPatrolSpawning.toString())
-        putString(GameRules.DO_WEATHER_CYCLE.name, setting.doWeatherCycle.toString())
+        putString(GameRules.SPAWN_WARDENS.toShortString(), setting.doWardenSpawning.toString())
+        putString(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER.toShortString(), setting.doFireTick.toString())
+        putString(GameRules.SPREAD_VINES.toShortString(), setting.doVinesSpread.toString())
+        putString(GameRules.DO_MOB_SPAWNING.toShortString(), setting.doMobSpawning.toString())
+        putString(GameRules.ADVANCE_TIME.toShortString(), setting.doDaylightCycle.toString())
+        putString(GameRules.KEEP_INVENTORY.toShortString(), setting.keepInventory.toString())
+        putString(GameRules.DO_MOB_GRIEFING.toShortString(), setting.doMobGriefing.toString())
+        putString(GameRules.SPAWN_WANDERING_TRADERS.toShortString(), setting.doTraderSpawning.toString())
+        putString(GameRules.SPAWN_PATROLS.toShortString(), setting.doPatrolSpawning.toString())
+        putString(GameRules.ADVANCE_WEATHER.toShortString(), setting.doWeatherCycle.toString())
     }
 
     private fun generatorMockNbt() = NbtCompound().apply {

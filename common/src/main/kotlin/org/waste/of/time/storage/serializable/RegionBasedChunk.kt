@@ -33,6 +33,7 @@ import org.waste.of.time.storage.Cacheable
 import org.waste.of.time.storage.CustomRegionBasedStorage
 import org.waste.of.time.storage.RegionBased
 import org.waste.of.time.storage.cache.HotCache
+import net.minecraft.world.chunk.PaletteProvider
 
 open class RegionBasedChunk(
     val chunk: WorldChunk,
@@ -67,9 +68,8 @@ open class RegionBasedChunk(
         )
 
     private val stateIdContainer = PalettedContainer.createPalettedContainerCodec(
-        Block.STATE_IDS,
         BlockState.CODEC,
-        PalettedContainer.PaletteProvider.BLOCK_STATE,
+        PaletteProvider.forBlockStates(Block.STATE_IDS),
         Blocks.AIR.defaultState
     )
 
@@ -159,9 +159,8 @@ open class RegionBasedChunk(
         val biomeRegistry = chunk.world.registryManager.getOptional(RegistryKeys.BIOME).orElse(null) ?: return@apply
         val defaultValue = biomeRegistry.getOptional(BiomeKeys.PLAINS).orElse(null) ?: return@apply
         val biomeCodec = PalettedContainer.createReadableContainerCodec(
-            biomeRegistry.indexedEntries,
             biomeRegistry.entryCodec,
-            PalettedContainer.PaletteProvider.BIOME,
+            PaletteProvider.forBiomes(biomeRegistry.indexedEntries),
             defaultValue
         )
         val lightingProvider = chunk.world.chunkManager.lightingProvider

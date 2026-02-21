@@ -6,13 +6,15 @@ import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
 import org.waste.of.time.manager.CaptureManager
+import net.minecraft.client.input.KeyInput
 
 class EnterTextField(
     textRenderer: TextRenderer, x: Int, y: Int, width: Int, height: Int, message: Text, val client: MinecraftClient?
 ) : TextFieldWidget(textRenderer, x, y, width, height, message) {
-
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (keyCode == GLFW.GLFW_KEY_ENTER) {
+//(KeyInput arg0)
+//    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+    override fun keyPressed(keyInput: KeyInput): Boolean {
+        if (keyInput.isEnter()) {
             if (CaptureManager.capturing) {
                 client?.setScreen(null)
                 CaptureManager.stop()
@@ -22,6 +24,6 @@ class EnterTextField(
             }
             return true
         }
-        return super.keyPressed(keyCode, scanCode, modifiers)
+        return super.keyPressed(keyInput)
     }
 }
